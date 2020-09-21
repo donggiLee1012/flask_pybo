@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>main</h1>
+{{ form }}
+{% endblock %}
+
+
+{% block script%}
+<script type="text/javascript" src="{{ url_for('static', filename='nodejs/app.js') }}"></script>
+{% endblock %}

@@ -17,7 +17,6 @@ naming_convention = {
 db = SQLAlchemy(metadata=MetaData(naming_convention=naming_convention))
 migrate = Migrate()
 
-
 # db = SQLAlchemy()
 # migrate = Migrate()
 
@@ -29,7 +28,6 @@ def create_app():
 
     # ORM
     db.init_app(app)
-    migrate.init_app(app,db)
 
     if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
         migrate.init_app(app, db, render_as_batch=True)
@@ -39,13 +37,14 @@ def create_app():
 
     from . import models
     # 블루프린트
-    from .views import main_view,question_views,answer_views,auth_views,comment_views,vote_views
+    from .views import main_view,question_views,answer_views,auth_views,comment_views,vote_views,crawling_views
     app.register_blueprint(main_view.bp)
     app.register_blueprint(question_views.bp)
     app.register_blueprint(answer_views.bp)
     app.register_blueprint(auth_views.bp)
     app.register_blueprint(comment_views.bp)
     app.register_blueprint(vote_views.bp)
+    app.register_blueprint(crawling_views.bp)
 
     # 필터
     from .filter import format_datetime
