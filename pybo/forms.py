@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField,PasswordField,SelectField
+from wtforms import StringField, TextAreaField,PasswordField,SelectField,IntegerField,validators
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired,Length,EqualTo,Email
 
@@ -30,6 +30,6 @@ for i in range(220,315,5):
     cho.append((str(i),str(i)+'mm'))
 
 class SearchShoes(FlaskForm):
-
+    quantity = IntegerField('건수',validators=[validators.NumberRange(min=1,max=100)])
     size = SelectField('사이즈',choices=cho,coerce=str)
     content = StringField('내용',validators=[DataRequired('검색하실 신발명을 입력하세요.')])

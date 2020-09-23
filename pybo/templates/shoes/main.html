@@ -25,6 +25,10 @@
                 <label class="col-md-3" for="content">검색하실 신발을 입력하세요 : </label>
                 <input class="col-md-2" type="text" name="content" id="content" value="{{ form.content.data or ''}}">
             </div>
+            <div class="form-group">
+                <label class="col-md-3" for="quantity">건수를 입력하세요 : </label>
+                <input class="col-md-2" type=number name="quantity" id="quantity" value="{{ form.quantity.data or ''}}">
+            </div>
             <br>
             <button type="submit" class="col-md-2 btn btn-secondary">검색하기</button>
             <button type="reset" class="col-md-2 btn btn-secondary">초기화</button>

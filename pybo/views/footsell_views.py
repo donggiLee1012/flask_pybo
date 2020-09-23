@@ -1,14 +1,14 @@
 from bs4 import BeautifulSoup
-from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-import os,time,re
+import time,re
 import math
-from flask import Blueprint, url_for, request, render_template,g,flash
-from pybo.models import User
+from flask import Blueprint, url_for, request, render_template
 from werkzeug.utils import redirect
-from ..crawl_target import Make_driver
-
+from pybo.templates.modules.crawl_target import Make_driver
+from .. import db
+from pybo.models import Shoes
+from datetime import datetime
 from ..forms import SearchShoes
 
 bp = Blueprint('shoes',__name__,url_prefix='/shoes')
@@ -20,103 +20,58 @@ def main():
 
     if request.method == 'POST' and form.validate_on_submit():
 
-        return render_template('shoes/shoes_result.html',method='POST',form=form)
+        return redirect(url_for('shoes.process'),code=307)
     else:
         return render_template('shoes/main.html',form=form)
 
 
 
 @bp.route('/footsell',methods=('GET','POST'))
-def footsell(form):
+def process():
+    soup_list=[]
 
-
-
-    size = form.size.label
-    query_txt = form.content.data
-
-
+    form = SearchShoes()
 
     target = 'https://footsell.com/'
     add_uri = r'g2/bbs/board.php?bo_table=m51&r=ok'
-    
-    fs = Make_driver()
-    fs(target+add_uri)
-    search(fs.driver,query_txt,size)
 
-    # fs.driver.get('https://footsell.com/')
-    return render_template('shoes/shoes_result.html',form=form)
+    size = form.size.data
+    query_txt = form.content.data
+    quantity = form.quantity.data
 
-@bp.route('/footsell/detail', methods=['POST'])
-def footsell_detail():
-    return 4
+    fs = Make_driver(query_txt,size,quantity)
 
+    fs.driver.get(target+add_uri)
+    fs.driver.implicitly_wait(10)
 
-def search(driver,query_txt,size):
-    # 검색
-    search_box = driver.find_element_by_css_selector('#list_search_text_input')
-    search_box.send_keys(query_txt)
-    search_box.send_keys(Keys.ENTER)
-
-    # 사이즈별 선택한게있으면 실행
-    if size !='':
-        input_size = 'option[value="' + '{}"]'.format(size)
-        size_select = driver.find_element(By.CSS_SELECTOR, input_size)
-        size_select.click()
+    fs.search()
 
 
-def parser(driver,many=120,soup_list=[]):
+    fs.parser(soup_list)
+    # --------OK------------
 
-    for j in range(math.ceil(int(many) / 40)):
-        html = driver.page_source
-        soup = BeautifulSoup(html, 'html.parser')
-        time.sleep(2)
-        border_list = soup.find_all(id=re.compile('list_row_'))
+    objs=fs.check(soup_list)
 
-        if border_list == []:
-            print('검색결과없음')
-            break
 
-        soup_list.append(border_list)
+    # db.session.commit()
+    #
+    obj=[]
+    for title, condition, size, price, seller, uploadtime, uri, img in objs:
+        obj.append(Shoes(title=title, condition=condition,size=size,price=price,
+              seller=seller,upload_date=uploadtime,
+              uri=uri,search_query=query_txt))
 
-        try:
-            driver.find_elements(By.CSS_SELECTOR, 'ul>li>a')[j].send_keys(Keys.ENTER)
-        except:
-            break
+    db.session.bulk_save_objects(obj)
+    db.session.commit()
 
-def check(border_list_att):
-    # 제목
-    try:
-        title = border_list_att.find('span', id=re.compile('^list_subject_')).text.strip()
+    fs.driver.quit()
+    del fs
+    # shoes = Shoes(title=title, create_date=datetime.date(datetime.now()), )
+    # db.session.add(shoes)
+    # db.session.commit()
+    return render_template('shoes/shoes_result.html',form=form,obj=obj)
 
-    except:
-        title = border_list_att.find('span', class_='smallfont color_aaa').text.strip()
 
-    # 컨디션
-    condition = border_list_att.find('span', class_='list_market_used han').text
 
-    # 사이즈
-    size = border_list_att.find('span', class_='list_market_size').text
 
-    # 가격
-    try:
-        price = border_list_att.find('div', class_=re.compile('^list_market_price')).text.strip()
-    except:
-        price = border_list_att.find('span', class_='color_aaa normal smallfont').text.strip()
-
-    # 판매자명
-    seller = border_list_att.find('div', class_=re.compile('^float_left list_market_name')).text.strip()
-
-    # 업로드 시각
-    uploadtime = border_list_att.find('span', class_='list_table_dates').text.strip()
-
-    # uri
-    uri = border_list_att.find('a').get('href')
-
-    # img
-    img = border_list_att.find('img').get('src')
-
-    if ':' in uploadtime:
-        uploadtime = 1#Footsell.time_marker
-
-    return [title, condition, size, price, seller, uploadtime, uri, img]
 
