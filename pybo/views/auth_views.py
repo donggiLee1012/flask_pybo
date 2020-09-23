@@ -5,6 +5,7 @@ from werkzeug.utils import redirect
 from pybo import db
 from pybo.forms import UserCreateForm,UserLoginForm
 from pybo.models import User
+from pybo.crawl_target import Make_driver
 import functools
 
 bp = Blueprint('auth',__name__,url_prefix='/auth')
