@@ -13,7 +13,7 @@ class Make_driver:
     robots = 'robots.txt'
     driverpath = r'C:\projects\firstproject\pybo\static\chromedriver.exe'
 
-    def __init__(self,query_txt,size,quantity):
+    def __init__(self,query_txt='',size='',quantity=90):
         self.driver = webdriver.Chrome(Make_driver.driverpath)
         self.query_txt = query_txt
         if size =='':
@@ -31,10 +31,14 @@ class Make_driver:
             time.sleep(2)
             border_list = soup.find_all(id=re.compile('list_row_'))
 
+
             if border_list == []:
                 border_list='결과안잡힘'
                 soup_list.append(border_list)
                 break
+
+            if self.query_txt =='':
+                border_list = border_list[3:]
 
             soup_list.append(border_list)
 
@@ -124,3 +128,5 @@ class Make_driver:
                     break
 
         return zip(title, condition, size, price, seller, uploadtime, uri, img)
+
+

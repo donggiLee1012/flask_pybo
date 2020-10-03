@@ -2,30 +2,45 @@
 
 {% block content %}
 <div class="container my-3 center">
-    <table class="table table-striped">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">First</th>
-      <th scope="col">Last</th>
-      <th scope="col">Handle</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Mark</td>
-      <td>Otto</td>
-      <td>@mdo</td>
-    </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>{{form.size.data}}</td>
-      <td>{{form.content.data}}</td>
-      <td>{{form.quantity.data}}</td>
-    </tr>
-  </tbody>
-</table>
+  <table class="table">
+        <thead>
+        <tr class="text-center thead-dark">
+            <th>번호</th>
+            <th>사이즈</th>
+            <th>상태</th>
+            <th style="width:50%">제목</th>
+            <th>가격</th>
+            <th>작성일시</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if question_list %}
+        {% for question in question_list.items %}
+        <tr class="text-center">
+            <!-- 번호 -->
+            <td>{{ question_list.total - ((question_list.page-1)*question_list.per_page) - loop.index0 }}</td>
+            <td>{% if question.voter|length >0 %}
+                <span class="badge badge-warning px-2 py-1">{{ question.voter|length}}</span>
+                {% endif %}
+            </td>
+            <!--제목 -->
+            <td class="text-left">
+                <a href="{{ url_for('question.detail',question_id=question.id)}}">{{ question.subject }}</a>
+                <span class="text-danger smaill ml-2">{{ question.answer_set|length }}</span>
+            </td>
+            <!-- 글쓴이 -->
+            <td>{{ question.user.username }}</td>
+            <!-- 작성일시 -->
+            <td>{{question.create_date|datetime}}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="3">데이터가없습니다.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
 </div>
 <p>
   {{ obj }}

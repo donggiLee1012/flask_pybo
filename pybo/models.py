@@ -61,5 +61,6 @@ class Shoes(db.Model):
     seller = db.Column(db.String(30))
     upload_date = db.Column(db.DateTime())
     uri = db.Column(db.Text())
+    img = db.Column(db.Text())
     search_query = db.Column(db.String(30))
 
