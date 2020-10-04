@@ -7,6 +7,10 @@ import os,re,time
 from datetime import datetime
 import math
 
+import urllib
+import urllib.request
+import requests
+
 
 
 class Make_driver:
@@ -21,6 +25,15 @@ class Make_driver:
         else:
             self.size = int(size)
         self.quantity = quantity
+        self.time_marker = time.strftime('%Y-%m-%d_%H%M', time.localtime())
+
+        self.img_path = r'C:\projects\firstproject\pybo\static\crawling_data\{}'.format(self.time_marker)
+
+        if os.path.exists(self.img_path):
+            pass
+        else:
+            os.makedirs(self.img_path)
+
 
     def parser(self,soup_list=[]):
 
@@ -71,6 +84,7 @@ class Make_driver:
         uploadtime = []
         uri = []
         img = []
+
         count=0
 
         for border_list in soup_list:
@@ -113,7 +127,6 @@ class Make_driver:
 
                     uploadtime_att = datetime.strptime('20'+uploadtime_att,'%Y-%m-%d').date()
 
-
                 title.append(title_att)
                 condition.append(condition_att)
                 size.append(size_att)
@@ -128,5 +141,13 @@ class Make_driver:
                     break
 
         return zip(title, condition, size, price, seller, uploadtime, uri, img)
+
+    def save_img(self,img_url,id_url,query_txt=''):
+
+        b_id = re.search('(\d+)$', id_url).group()
+
+        img_path = os.path.join(self.img_path,query_txt+b_id+'.jpg')
+
+        urllib.request.urlretrieve('https://footsell.com' + img_url,img_path)
 
 

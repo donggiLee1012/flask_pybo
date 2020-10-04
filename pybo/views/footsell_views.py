@@ -97,10 +97,15 @@ def test():
     objs = fs.check(soup_list)
     obj=[]
 
+
     for title, condition, size, price, seller, uploadtime, uri, img in objs:
         obj.append(Shoes(title=title, condition=condition,size=size,price=price,
               seller=seller,upload_date=uploadtime,
               uri=uri,search_query='',img=img))
+
+        fs.save_img(img,uri)
+
+
 
     db.session.bulk_save_objects(obj)
     db.session.commit()
@@ -109,6 +114,14 @@ def test():
 
 
     return render_template('shoes/test.html',soup_list=soup_list)
+
+@bp.route('/test2/<uri>')
+def test2(uri):
+    img_uri = uri
+    urllib.request.urlretrieve('https://footsell.com'+img_uri,'test.jpg')
+
+    return render_template('shoes/test2.html')
+
 
 
 
