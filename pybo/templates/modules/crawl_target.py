@@ -3,13 +3,18 @@ from selenium import webdriver
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-import os,re,time
+import os,re,time,sys
 from datetime import datetime
 import math
 
 import urllib
 import urllib.request
 import requests
+
+# sys.path.append('/c/projects/firstproject/pybo')
+
+from pybo import db
+from pybo.models import Shoes
 
 
 
@@ -38,10 +43,10 @@ class Make_driver:
     def parser(self,soup_list=[]):
 
         for j in range(math.ceil(int(self.quantity) / 40)):
-
+            time.sleep(1)
             html = self.driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
-            time.sleep(2)
+            time.sleep(1)
             border_list = soup.find_all(id=re.compile('list_row_'))
 
 
@@ -142,12 +147,53 @@ class Make_driver:
 
         return zip(title, condition, size, price, seller, uploadtime, uri, img)
 
-    def save_img(self,img_url,id_url,query_txt=''):
+    def save_img(self,img_url,num,query_txt=''):
 
-        b_id = re.search('(\d+)$', id_url).group()
+        # b_id = re.search('(\d+)$', id_url).group()
 
-        img_path = os.path.join(self.img_path,query_txt+b_id+'.jpg')
+        img_path = os.path.join(self.img_path,query_txt+str(num)+'.jpg')
 
         urllib.request.urlretrieve('https://footsell.com' + img_url,img_path)
 
+if __name__ == '__main__':
+    soup_list = []
 
+    target = 'https://footsell.com/'
+    add_uri = r'g2/bbs/board.php?bo_table=m51&r=ok'
+
+    fs = Make_driver()
+    fs.driver.implicitly_wait(10)
+    fs.driver.get(target + add_uri)
+    fs.driver.refresh()
+    fs.parser(soup_list)
+    objs = fs.check(soup_list)
+    obj = []
+
+    app = create_app()
+    with app.app_context():
+
+        num = 1
+        for title, condition, size, price, seller, uploadtime, uri, img in objs:
+            obj.append(Shoes(title=title, condition=condition, size=size, price=price,
+                             seller=seller, upload_date=uploadtime,
+                             uri=uri, img=img))
+            # 이미지 처리방식 변경필요
+            # fs.save_img(img, num)
+            num += 1
+        db.session.bulk_save_objects(obj)
+        db.session.commit()
+
+    # num = 1
+    # for title, condition, size, price, seller, uploadtime, uri, img in objs:
+    #     obj.append(Shoes(title=title, condition=condition, size=size, price=price,
+    #                      seller=seller, upload_date=uploadtime,
+    #                      uri=uri, img=img))
+    #     # 이미지 처리방식 변경필요
+    #     # fs.save_img(img, num)
+    #     num += 1
+
+    # db.session.bulk_save_objects(obj)
+    # db.session.commit()
+
+    fs.driver.quit()
+    del fs

@@ -1,19 +1,8 @@
-from bs4 import BeautifulSoup
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-import time,re
-import math
-
-import urllib
-import urllib.request
-import requests
-
 from flask import Blueprint, url_for, request, render_template
 from werkzeug.utils import redirect
 from pybo.templates.modules.crawl_target import Make_driver
 from .. import db
 from pybo.models import Shoes
-from datetime import datetime
 from ..forms import SearchShoes
 
 
@@ -82,45 +71,15 @@ def process():
 
     return render_template('shoes/shoes_result.html',form=form,obj=obj)
 
-@bp.route('/')
+@bp.route('/test/')
 def test():
-    soup_list = []
-    form = SearchShoes()
-    target = 'https://footsell.com/'
-    add_uri = r'g2/bbs/board.php?bo_table=m51&r=ok'
+
+    test = Shoes.query.filter(Shoes.uri.ilike('%done=1%') | Shoes.uri.ilike('%product_status=%'))
+    ts1 = Shoes.query.filter(Shoes.uri.like('%id=%'))
+    cnt = test.count()
 
 
-    fs = Make_driver()
-    fs.driver.get(target + add_uri)
-    fs.driver.implicitly_wait(10)
-    fs.parser(soup_list)
-    objs = fs.check(soup_list)
-    obj=[]
-
-
-    for title, condition, size, price, seller, uploadtime, uri, img in objs:
-        obj.append(Shoes(title=title, condition=condition,size=size,price=price,
-              seller=seller,upload_date=uploadtime,
-              uri=uri,search_query='',img=img))
-
-        fs.save_img(img,uri)
-
-
-
-    db.session.bulk_save_objects(obj)
-    db.session.commit()
-
-    fs.driver.quit()
-
-
-    return render_template('shoes/test.html',soup_list=soup_list)
-
-@bp.route('/test2/<uri>')
-def test2(uri):
-    img_uri = uri
-    urllib.request.urlretrieve('https://footsell.com'+img_uri,'test.jpg')
-
-    return render_template('shoes/test2.html')
+    return render_template('shoes/test.html',test=test,cnt=cnt,ts1=ts1)
 
 
 

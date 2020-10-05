@@ -1,7 +1,17 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<h2>{{soup_list | length}}</h2>
-<h2>{{soup_list[0] | length}}</h2>
-{{soup_list}}
+{{cnt}}
+{{ts1}}<br><br>
+------------
+{% for j in ts1 %}
+{{j.uri}}
+<br>
+{% endfor %}
+<br><br>
+------------
+
+
+{% for i in test %}
+{{i.uri}}<br>
+{% endfor %}
 {% endblock %}
