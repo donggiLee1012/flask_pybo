@@ -4,7 +4,7 @@ from pybo.templates.modules.crawl_target import Make_driver
 from .. import db
 from pybo.models import Shoes
 from ..forms import SearchShoes
-
+from pybo.views.auth_views import login_required
 
 bp = Blueprint('shoes',__name__,url_prefix='/shoes')
 
@@ -21,13 +21,15 @@ def main():
 
 
 @bp.route('/list/')
+
 def _list():
     page = request.args.get('page', type=int, default=1)  # 페이지
-    shoes_list = Shoes.query.order_by(Shoes.upload_date.desc())
+    shoes_list = Shoes.query.order_by(Shoes.id.desc())
     shoes_list = shoes_list.paginate(page, per_page=10)
     return render_template('shoes/shoes_list.html', shoes_list=shoes_list)
 
 @bp.route('/detail/<int:shoes_id>/')
+@login_required
 def detail(shoes_id):
     shoes = Shoes.query.get_or_404(shoes_id)
 
@@ -46,9 +48,12 @@ def process():
     quantity = form.quantity.data
 
     fs = Make_driver(query_txt,size,quantity)
-    fs.driver.get(target+add_uri)
     fs.driver.implicitly_wait(10)
-    fs.search()
+    fs.driver.get(target+add_uri)
+    if query_txt !='기본':
+        fs.search()
+    else: fs.driver.refresh()
+
     fs.parser(soup_list)
     objs=fs.check(soup_list)
 
@@ -68,8 +73,12 @@ def process():
     kw = request.args.get('kw', type=str, default='')
     so = request.args.get('so', type=str, default='recent')
 
+    return redirect(url_for('shoes._list'))
+    #return render_template('shoes/shoes_result.html',form=form,obj=obj)
 
-    return render_template('shoes/shoes_result.html',form=form,obj=obj)
+
+
+
 
 @bp.route('/test/')
 def test():

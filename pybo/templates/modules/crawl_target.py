@@ -3,7 +3,7 @@ from selenium import webdriver
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-import os,re,time,sys
+import os, re, time, sys
 from datetime import datetime
 import math
 
@@ -17,18 +17,24 @@ from pybo import db
 from pybo.models import Shoes
 
 
-
 class Make_driver:
     robots = 'robots.txt'
     driverpath = r'C:\projects\firstproject\pybo\static\chromedriver.exe'
 
-    def __init__(self,query_txt='',size='',quantity=90):
+    def __init__(self, query_txt='', size='', quantity=90):
         self.driver = webdriver.Chrome(Make_driver.driverpath)
-        self.query_txt = query_txt
-        if size =='':
-            self.size=''
+
+        if size == '':
+            self.size = ''
         else:
             self.size = int(size)
+
+        if query_txt == '기본':
+            self.query_txt = ''
+            self.size = ''
+        else:
+            self.query_txt = query_txt
+
         self.quantity = quantity
         self.time_marker = time.strftime('%Y-%m-%d_%H%M', time.localtime())
 
@@ -39,8 +45,7 @@ class Make_driver:
         else:
             os.makedirs(self.img_path)
 
-
-    def parser(self,soup_list=[]):
+    def parser(self, soup_list=[]):
 
         for j in range(math.ceil(int(self.quantity) / 40)):
             time.sleep(1)
@@ -49,13 +54,12 @@ class Make_driver:
             time.sleep(1)
             border_list = soup.find_all(id=re.compile('list_row_'))
 
-
             if border_list == []:
-                border_list='결과안잡힘'
+                border_list = '결과안잡힘'
                 soup_list.append(border_list)
                 break
 
-            if self.query_txt =='':
+            if self.query_txt == '':
                 border_list = border_list[3:]
 
             soup_list.append(border_list)
@@ -64,8 +68,6 @@ class Make_driver:
                 self.driver.find_elements(By.CSS_SELECTOR, 'ul>li>a')[j].send_keys(Keys.ENTER)
             except:
                 break
-
-
 
     def search(self):
         # 검색
@@ -79,10 +81,9 @@ class Make_driver:
             size_select = self.driver.find_element(By.CSS_SELECTOR, input_size)
             size_select.click()
 
-
     def check(self, soup_list):
-        title=[]
-        condition=[]
+        title = []
+        condition = []
         size = []
         price = []
         seller = []
@@ -90,7 +91,7 @@ class Make_driver:
         uri = []
         img = []
 
-        count=0
+        count = 0
 
         for border_list in soup_list:
 
@@ -130,7 +131,7 @@ class Make_driver:
                     uploadtime_att = datetime.date(datetime.now())
                 else:
 
-                    uploadtime_att = datetime.strptime('20'+uploadtime_att,'%Y-%m-%d').date()
+                    uploadtime_att = datetime.strptime('20' + uploadtime_att, '%Y-%m-%d').date()
 
                 title.append(title_att)
                 condition.append(condition_att)
@@ -147,53 +148,11 @@ class Make_driver:
 
         return zip(title, condition, size, price, seller, uploadtime, uri, img)
 
-    def save_img(self,img_url,num,query_txt=''):
+    def save_img(self, img_url, num, query_txt=''):
 
         # b_id = re.search('(\d+)$', id_url).group()
 
-        img_path = os.path.join(self.img_path,query_txt+str(num)+'.jpg')
+        img_path = os.path.join(self.img_path, query_txt + str(num) + '.jpg')
 
-        urllib.request.urlretrieve('https://footsell.com' + img_url,img_path)
+        urllib.request.urlretrieve('https://footsell.com' + img_url, img_path)
 
-if __name__ == '__main__':
-    soup_list = []
-
-    target = 'https://footsell.com/'
-    add_uri = r'g2/bbs/board.php?bo_table=m51&r=ok'
-
-    fs = Make_driver()
-    fs.driver.implicitly_wait(10)
-    fs.driver.get(target + add_uri)
-    fs.driver.refresh()
-    fs.parser(soup_list)
-    objs = fs.check(soup_list)
-    obj = []
-
-    app = create_app()
-    with app.app_context():
-
-        num = 1
-        for title, condition, size, price, seller, uploadtime, uri, img in objs:
-            obj.append(Shoes(title=title, condition=condition, size=size, price=price,
-                             seller=seller, upload_date=uploadtime,
-                             uri=uri, img=img))
-            # 이미지 처리방식 변경필요
-            # fs.save_img(img, num)
-            num += 1
-        db.session.bulk_save_objects(obj)
-        db.session.commit()
-
-    # num = 1
-    # for title, condition, size, price, seller, uploadtime, uri, img in objs:
-    #     obj.append(Shoes(title=title, condition=condition, size=size, price=price,
-    #                      seller=seller, upload_date=uploadtime,
-    #                      uri=uri, img=img))
-    #     # 이미지 처리방식 변경필요
-    #     # fs.save_img(img, num)
-    #     num += 1
-
-    # db.session.bulk_save_objects(obj)
-    # db.session.commit()
-
-    fs.driver.quit()
-    del fs

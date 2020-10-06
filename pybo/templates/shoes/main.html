@@ -29,8 +29,10 @@
                 <label class="col-md-3" for="quantity">건수를 입력하세요 : </label>
                 <input class="col-md-2" type=number name="quantity" id="quantity" value="{{ form.quantity.data or ''}}">
             </div>
+
+
             <br>
-            <button type="submit" class="col-md-2 btn btn-secondary">검색하기</button>
+            <button type="submit"{% if not g.user %}disabled {% endif %} class="col-md-2 btn btn-secondary">{% if not g.user %}로그인후사용{% else %}검색하기{% endif %}</button>
             <button type="reset" class="col-md-2 btn btn-secondary">초기화</button>
         </form>
     </div>

@@ -5,21 +5,26 @@
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse flex-grow-0" id="navbarNav">
-        {% if g.user %}
+
         <ul class="navbar-nav">
+
+            {% if g.user %}
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('auth.logout') }}">{{ g.user.username }} (로그아웃)</a>
             </li>
-        </ul>
-        {% else %}
-        <ul class="navbar-nav">
+            {% else %}
             <li class="nav-item ">
                 <a class="nav-link" href="{{ url_for('auth.login') }}">로그인</a>
             </li>
             <li class="nav-item ">
                 <a class="nav-link" href="{{ url_for('auth.signup') }}">계정생성</a>
             </li>
+            {% endif %}
+
+            <li class="nav-item">
+                 <a class="nav-link" href="{{url_for('shoes.main')}}">신발검색</a>
+            </li>
+
         </ul>
-        {% endif %}
     </div>
 </nav>
