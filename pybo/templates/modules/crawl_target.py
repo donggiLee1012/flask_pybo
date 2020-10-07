@@ -19,7 +19,7 @@ from pybo.models import Shoes
 
 class Make_driver:
     robots = 'robots.txt'
-    driverpath = r'C:\projects\firstproject\pybo\static\chromedriver.exe'
+    driverpath = os.path.join(os.path.dirname(__file__),'chromedriver.exe')
 
     def __init__(self, query_txt='', size='', quantity=90):
         self.driver = webdriver.Chrome(Make_driver.driverpath)
@@ -164,4 +164,3 @@ class Make_driver:
         img_path = os.path.join(self.img_path, query_txt + str(num) + '.jpg')
 
         urllib.request.urlretrieve('https://footsell.com' + img_url, img_path)
-
