@@ -19,7 +19,15 @@ from pybo.models import Shoes
 
 class Make_driver:
     robots = 'robots.txt'
-    driverpath = os.path.join(os.path.dirname(__file__),'chromedriver.exe')
+    driverpath = os.path.join(os.path.dirname(__file__))
+    driverpath += r'/chromedriver.exe'
+    options = webdriver.ChromeOptions
+
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    driver = webdriver.Chrome(driverpath,chrome_options=chrome_options)
 
     def __init__(self, query_txt='', size='', quantity=90):
         self.driver = webdriver.Chrome(Make_driver.driverpath)
@@ -164,3 +172,8 @@ class Make_driver:
         img_path = os.path.join(self.img_path, query_txt + str(num) + '.jpg')
 
         urllib.request.urlretrieve('https://footsell.com' + img_url, img_path)
+
+if '__main__' ==__name__:
+    driverpath = os.path.join(os.path.dirname(__file__))
+    driverpath += r'/chromedriver.exe'
+    print(driverpath)
