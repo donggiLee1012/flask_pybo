@@ -5,11 +5,17 @@ from .. import db
 from pybo.models import Shoes
 from ..forms import SearchShoes
 from pybo.views.auth_views import login_required
+from sqlalchemy import func,nullslast
 
 bp = Blueprint('shoes',__name__,url_prefix='/shoes')
 
-@bp.route('/main/',methods=('GET','POST'))
+@bp.route('/main/')
 def main():
+    return render_template('shoes/shoes_main.html')
+
+
+@bp.route('/search/',methods=('GET','POST'))
+def search():
 
     form = SearchShoes()
 
@@ -17,16 +23,40 @@ def main():
 
         return redirect(url_for('shoes.process'),code=307)
     else:
-        return render_template('shoes/main.html',form=form)
+        return render_template('shoes/shoes_search.html',form=form)
+
+
 
 
 @bp.route('/list/')
-
 def _list():
-    page = request.args.get('page', type=int, default=1)  # 페이지
-    shoes_list = Shoes.query.order_by(Shoes.id.desc())
+    page = request.args.get('page', type=int, default=1)
+    kw = request.args.get('kw', type=str, default='')
+    so = request.args.get('so',type=str, default='recent')
+
+    #정렬
+    if so == 'expensive':
+        shoes_list = Shoes.query.order_by(Shoes.price.desc())
+    elif so =='popular':
+        shoes_list = Shoes.query.order_by(Shoes.size.desc())
+    else : #최신수
+        shoes_list = Shoes.query.order_by(Shoes.id.desc())
+
+    #검색
+    if kw:
+        search = '%%{}%%'.format(kw)
+        if so == 'expensive':
+            shoes_list = Shoes.query.filter(Shoes.title.ilike(search) | Shoes.search_query.ilike(search)).order_by(Shoes.price.desc())
+        elif so == 'popular':
+            shoes_list = Shoes.query.filter(Shoes.title.ilike(search) | Shoes.search_query.ilike(search)).order_by(Shoes.size.desc())
+        else:  # 최신수
+            shoes_list = Shoes.query.filter(Shoes.title.ilike(search) | Shoes.search_query.ilike(search)).order_by(Shoes.id.desc())
+
+
     shoes_list = shoes_list.paginate(page, per_page=10)
-    return render_template('shoes/shoes_list.html', shoes_list=shoes_list)
+
+    return render_template('shoes/shoes_list.html', shoes_list=shoes_list,page=page,kw=kw,so=so)
+
 
 @bp.route('/detail/<int:shoes_id>/')
 @login_required
@@ -69,9 +99,6 @@ def process():
 
     fs.driver.quit()
     del fs
-    page = request.args.get('page', type=int, default=1)
-    kw = request.args.get('kw', type=str, default='')
-    so = request.args.get('so', type=str, default='recent')
 
     return redirect(url_for('shoes._list'))
     #return render_template('shoes/shoes_result.html',form=form,obj=obj)
@@ -86,7 +113,9 @@ def test():
     test = Shoes.query.filter(Shoes.uri.ilike('%done=1%') | Shoes.uri.ilike('%product_status=%'))
     ts1 = Shoes.query.filter(Shoes.uri.like('%id=%'))
     cnt = test.count()
-
+    # 삭제
+    # Shoes.query.delete()
+    # db.session.commit()
 
     return render_template('shoes/test.html',test=test,cnt=cnt,ts1=ts1)
 

@@ -57,7 +57,7 @@ class Shoes(db.Model):
     title = db.Column(db.String(200),nullable=False)
     condition = db.Column(db.String(20),default='새상품')
     size = db.Column(db.String(30))
-    price = db.Column(db.String(30),default='거래완료')
+    price = db.Column(db.Integer,default=0)
     seller = db.Column(db.String(30))
     upload_date = db.Column(db.DateTime())
     uri = db.Column(db.Text())

@@ -111,9 +111,18 @@ class Make_driver:
 
                 # 가격
                 try:
+                    # 금액
                     price_att = border_list_att.find('div', class_=re.compile('^list_market_price')).text.strip()
+                    price_att = int(price_att[1:].replace(',',''))
+
+                except AttributeError:
+                    # 금액 0
+                    price_att = 0
+
                 except:
+                    # 거래종료
                     price_att = border_list_att.find('span', class_='color_aaa normal smallfont').text.strip()
+                    price_att = 0
 
                 # 판매자명
                 seller_att = border_list_att.find('div', class_=re.compile('^float_left list_market_name')).text.strip()

@@ -47,8 +47,9 @@ def create_app():
     app.register_blueprint(footsell_views.bp)
 
     # 필터
-    from .filter import format_datetime
+    from .filter import format_datetime,exchange_rate
     app.jinja_env.filters['datetime'] = format_datetime
+    app.jinja_env.filters['price'] = exchange_rate
 
     # markdown
     Markdown(app, extensions=['nl2br','fenced_code'])
