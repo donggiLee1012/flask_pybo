@@ -11,11 +11,6 @@ import urllib
 import urllib.request
 import requests
 
-# sys.path.append('/c/projects/firstproject/pybo')
-
-from pybo import db
-from pybo.models import Shoes
-
 
 class Make_driver:
     robots = 'robots.txt'
@@ -23,13 +18,14 @@ class Make_driver:
     driverpath += r'/chromedriver.exe'
     options = webdriver.ChromeOptions
 
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(driverpath,chrome_options=chrome_options)
+    #
+    # chrome_options = webdriver.ChromeOptions()
+    # chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--no-sandbox')
+    # chrome_options.add_argument('--disable-dev-shm-usage')
+    # driver = webdriver.Chrome(driverpath,chrome_options=chrome_options)
 
-    def __init__(self, query_txt='', size='', quantity=90):
+    def __init__(self, query_txt='', size='', quantity=''):
         self.driver = webdriver.Chrome(Make_driver.driverpath)
 
         if size == '':
@@ -145,7 +141,7 @@ class Make_driver:
                 img_att = border_list_att.find('img').get('src')
 
                 if ':' in uploadtime_att:
-                    uploadtime_att = datetime.date(datetime.now())
+                    uploadtime_att = datetime.now()
                 else:
 
                     uploadtime_att = datetime.strptime('20' + uploadtime_att, '%Y-%m-%d').date()
@@ -172,8 +168,3 @@ class Make_driver:
         img_path = os.path.join(self.img_path, query_txt + str(num) + '.jpg')
 
         urllib.request.urlretrieve('https://footsell.com' + img_url, img_path)
-
-if '__main__' ==__name__:
-    driverpath = os.path.join(os.path.dirname(__file__))
-    driverpath += r'/chromedriver.exe'
-    print(driverpath)

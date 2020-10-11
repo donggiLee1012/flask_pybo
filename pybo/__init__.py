@@ -46,6 +46,8 @@ def create_app():
     app.register_blueprint(vote_views.bp)
     app.register_blueprint(footsell_views.bp)
 
+
+
     # 필터
     from .filter import format_datetime,exchange_rate
     app.jinja_env.filters['datetime'] = format_datetime
