@@ -5,7 +5,7 @@ from .. import db
 from pybo.models import Shoes
 from ..forms import SearchShoes
 from pybo.views.auth_views import login_required
-from sqlalchemy import func,nullslast
+from sqlalchemy import func,nullslast,select
 import threading
 
 bp = Blueprint('shoes',__name__,url_prefix='/shoes')
@@ -64,7 +64,7 @@ def _list():
 def detail(shoes_id):
     shoes = Shoes.query.get_or_404(shoes_id)
 
-    return render_template('shoes_detail.html',shoes=shoes)
+    return render_template('shoes/shoes_detail.html',shoes=shoes)
 
 
 
@@ -77,33 +77,37 @@ def process():
     target = 'https://footsell.com/'
     add_uri = r'g2/bbs/board.php?bo_table=m51&r=ok'
 
-    def fsc():
-        size = form.size.data
-        query_txt = form.content.data
-        quantity = form.quantity.data
 
-        fs = Make_driver(query_txt,size,quantity)
-        fs.driver.implicitly_wait(10)
-        fs.driver.get(target+add_uri)
-        if query_txt !='기본':
-            fs.search()
-        else: fs.driver.refresh()
+    size = form.size.data
+    query_txt = form.content.data
+    quantity = form.quantity.data
 
-        fs.parser(soup_list)
-        objs=fs.check(soup_list)
+    fs = Make_driver(query_txt,size,quantity)
+    fs.driver.implicitly_wait(10)
+    fs.driver.get(target+add_uri)
+    if query_txt !='기본':
+        fs.search()
+    else: fs.driver.refresh()
 
-        # 데이터베이스 저장할 데이터들
-        obj=[]
-        for title, condition, size, price, seller, uploadtime, uri, img in objs:
-            obj.append(Shoes(title=title, condition=condition,size=size,price=price,
-                  seller=seller,upload_date=uploadtime,
-                  uri=uri,search_query=query_txt,img=img))
+    fs.parser(soup_list)
+    objs=fs.check(soup_list)
 
-        db.session.bulk_save_objects(obj)
-        db.session.commit()
+    shoes_list = Shoes.query.order_by(Shoes.id.desc()).first()
 
-        fs.driver.quit()
-        return redirect(url_for('shoes._list'))
+    # 데이터베이스 저장할 데이터들
+    obj=[]
+    for title, condition, size, price, seller, uploadtime, uri, img in objs:
+        if title == shoes_list.title and uploadtime.__str__()[:10] == shoes_list.upload_date[:10] and img[39:] == shoes_list.img[39:]:
+            break
+        obj.insert(0,Shoes(title=title, condition=condition,size=size,price=price,
+              seller=seller,upload_date=uploadtime,
+              uri=uri,search_query=query_txt,img=img))
+
+    db.session.bulk_save_objects(obj)
+    db.session.commit()
+
+    fs.driver.quit()
+
 
     return redirect(url_for('shoes._list'))
 
@@ -122,7 +126,10 @@ def test():
     # def tt1():
     #     return render_template('test.html')
 
-    return render_template('shoes/test.html')
+    shoes_list = Shoes.query.order_by(Shoes.id.desc()).first()
+
+    sss=shoes_list.upload_date
+    return render_template('shoes/test.html',shoes_list=shoes_list,sss=sss)
 
 def test22():
     import time

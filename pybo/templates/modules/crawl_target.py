@@ -39,10 +39,11 @@ class Make_driver:
         else:
             self.query_txt = query_txt
 
-        self.quantity = quantity
-        self.time_marker = time.strftime('%Y-%m-%d_%H%M', time.localtime())
+        self.quantity = int(quantity)
+        self.time_marker = time.strftime('%Y-%m-%d', time.localtime())
+        # self.img_path = r'/home/multidong1017/project/myproject/pybo/static/img/{}_{}'.format(self.time_marker,self.query_txt)
 
-        self.img_path = r'C:\projects\firstproject\pybo\static\crawling_data\{}'.format(self.time_marker)
+        self.img_path = r'C:\projects\firstproject\pybo\static\crawling_data\img\{}_{}'.format(self.time_marker,self.query_txt)
 
         if os.path.exists(self.img_path):
             pass
@@ -51,7 +52,7 @@ class Make_driver:
 
     def parser(self, soup_list=[]):
 
-        for j in range(math.ceil(int(self.quantity) / 40)):
+        for j in range(math.ceil(self.quantity / 40)):
             time.sleep(1)
             html = self.driver.page_source
             soup = BeautifulSoup(html, 'html.parser')
@@ -161,10 +162,8 @@ class Make_driver:
 
         return zip(title, condition, size, price, seller, uploadtime, uri, img)
 
-    def save_img(self, img_url, num, query_txt=''):
+    def save_img(self, img_url):
 
         # b_id = re.search('(\d+)$', id_url).group()
-
-        img_path = os.path.join(self.img_path, query_txt + str(num) + '.jpg')
-
+        img_path = os.path.join(self.img_path,img_url[39:])
         urllib.request.urlretrieve('https://footsell.com' + img_url, img_path)
