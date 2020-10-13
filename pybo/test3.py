@@ -45,10 +45,10 @@ if __name__ == '__main__':
     # print(top_row[0],top_row[1][:10],top_row[2][39:])
 
     for title, condition, size, price, seller, uploadtime, uri, img in objs:
-
+        # 제목과 날짜와 업로드 이미지가 같으면 같은 게시물로 보고 중복처리
         if title == top_row[0] and uploadtime.__str__()[:10] == top_row[1][:10] and img[39:] == top_row[2][39:]:
             break
-        print('{num} : {title} , {uploadtime},{img}'.format(num=num,title=title,uploadtime=uploadtime.__str__(),img=img[39:]))
+        print('{num} : {title} , {uploadtime}, {img}'.format(num=num,title=title,uploadtime=uploadtime.__str__(),img=img[39:]))
         abj_att=(title, condition, size, price, seller, uploadtime, uri, img, query_txt)
         fs.save_img(img)
         obj.insert(0,abj_att)

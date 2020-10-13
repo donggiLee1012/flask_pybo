@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField,PasswordField,SelectField,IntegerField,validators
-from wtforms.fields.html5 import EmailField
+from wtforms.fields.html5 import EmailField,DateField
+from flask_wtf.file import FileField, FileRequired
 from wtforms.validators import DataRequired,Length,EqualTo,Email
 
 
@@ -33,3 +34,13 @@ class SearchShoes(FlaskForm):
     quantity = IntegerField('건수',validators=[validators.NumberRange(min=1,max=100)])
     size = SelectField('사이즈',choices=cho,coerce=str)
     content = StringField('내용',validators=[DataRequired('검색하실 신발명을 입력하세요.')])
+
+brands=[('nike','나이키'),('adidas','아디다스'),('converse','컨버스'),('newbalance','뉴발란스'),('jordan','조던')]
+class ShoesModelCreateForm(FlaskForm):
+    name = StringField('제품명',validators=[DataRequired('제품코드를 입력 하세요.')])
+    code = StringField('제품코드',validators=[DataRequired('제품코드를 입력 하세요.')])
+    img = FileField('모델사진',validators=[FileRequired()])
+    brand = SelectField('브랜드',choices=brands,coerce=str)
+    releasedate = DateField('발매일',validators=[DataRequired()],format='%Y-%m-%d')
+    price = IntegerField('발매가', validators=[validators.NumberRange(min=0)])
+    colorway = StringField('색상',validators=[DataRequired('내용은 필수입력 항목입니다.')])

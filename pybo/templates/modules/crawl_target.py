@@ -43,7 +43,7 @@ class Make_driver:
         self.time_marker = time.strftime('%Y-%m-%d', time.localtime())
         # self.img_path = r'/home/multidong1017/project/myproject/pybo/static/img/{}_{}'.format(self.time_marker,self.query_txt)
 
-        self.img_path = r'C:\projects\firstproject\pybo\static\crawling_data\img\{}_{}'.format(self.time_marker,self.query_txt)
+        self.img_path = r'C:\projects\firstproject\pybo\static\crawling_data\img'
 
         if os.path.exists(self.img_path):
             pass

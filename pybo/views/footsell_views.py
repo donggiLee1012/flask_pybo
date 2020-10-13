@@ -1,9 +1,11 @@
 from flask import Blueprint, url_for, request, render_template
-from werkzeug.utils import redirect
+import os
+from werkzeug.utils import redirect,secure_filename
+from werkzeug.datastructures import CombinedMultiDict
 from pybo.templates.modules.crawl_target import Make_driver
 from .. import db
-from pybo.models import Shoes
-from ..forms import SearchShoes
+from pybo.models import Shoes,Shoesmodel
+from ..forms import SearchShoes,ShoesModelCreateForm
 from pybo.views.auth_views import login_required
 from sqlalchemy import func,nullslast,select
 import threading
@@ -99,6 +101,7 @@ def process():
     for title, condition, size, price, seller, uploadtime, uri, img in objs:
         if title == shoes_list.title and uploadtime.__str__()[:10] == shoes_list.upload_date[:10] and img[39:] == shoes_list.img[39:]:
             break
+        fs.save_img(img)
         obj.insert(0,Shoes(title=title, condition=condition,size=size,price=price,
               seller=seller,upload_date=uploadtime,
               uri=uri,search_query=query_txt,img=img))
@@ -126,17 +129,54 @@ def test():
     # def tt1():
     #     return render_template('test.html')
 
-    shoes_list = Shoes.query.order_by(Shoes.id.desc()).first()
+    #shoes_list = Shoes.query.order_by(Shoes.id.desc()).first()
 
-    sss=shoes_list.upload_date
-    return render_template('shoes/test.html',shoes_list=shoes_list,sss=sss)
-
-def test22():
-    import time
-    time.sleep(3)
-    return render_template('shoes/test2.html')
+    #sss=shoes_list.upload_date
+    query_txt = '덩크'
+    shoes_list = Shoes.query.filter(Shoes.search_query == query_txt).order_by(Shoes.id.desc()).first()
+    return render_template('shoes/test.html',shoes_list=shoes_list)
 
 
 
+@bp.route('/model/create/', methods=['GET', 'POST'])
+def model_create():
+    form = ShoesModelCreateForm()
+    #form = ShoesModelCreateForm(CombinedMultiDict((request.files, request.form)))
 
+    if request.method == 'POST' and form.validate_on_submit():
+        name = form.name.data
+        price = form.price.data
+        brand = form.brand.data
+        code = form.code.data
+        color = form.colorway.data
+        releasedate = form.releasedate.data
+        img = form.img.data
+
+        rrrr = [name,price,brand,code,color,releasedate,img]
+
+
+        filename = secure_filename(img.filename)
+        if name in filename :
+            pass
+        else:
+            filename = secure_filename(name)+'.jpg'
+
+        model = Shoesmodel(code=code, img=filename, brand=brand,release_date=releasedate,name=name,colorway=color,retail_price=price)
+        img.save(os.path.join(
+            os.getcwd(),r'pybo\static\crawling_data\model', filename
+        ))
+        db.session.add(model)
+        db.session.commit()
+
+        return render_template('shoes/test2.html',rrrr=rrrr)
+
+
+    else:
+        return render_template('shoes/shoes_model_create.html',form=form)
+#
+# @bp.route('/model/')
+# def model():
+#     shosemodel = Shoesmodel.query.all()
+#
+#
 

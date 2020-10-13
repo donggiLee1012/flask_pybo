@@ -4,3 +4,13 @@ selenium.common.exceptions.WebDriverException: Message: 'chromedriver.exe' execu
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
 
 sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+
+
+
+
+-------------
+sqlalchemy.exc.NoReferencedTableError: Foreign key associated with column
+외래키로 지정할 테이블.컬럼을 못찾았다는 내용.
+
+ShoesModel은 -> shoes_model 로 인식 
+Shoesmodel로 변경후 migrate 해주니 shoesmodel로 정상적으로 인식

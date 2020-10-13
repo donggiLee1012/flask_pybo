@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-3 center">
+    <div class="py-5 text-center">
+        <h3>신발모델 생성페이지</h3>
+        <p>
+        </p>
+    </div>
+
+    <div class="jumbotron text-center ">
+        <form method="post" class="post-form my-2" enctype="multipart/form-data" >
+            {{ form.csrf_token }}
+        {% include "form_errors.html" %}
+            <!--    브랜드     -->
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" for="brand">브랜드를 선택하세요 : </label>
+                <div class="col-sm-7">
+                <select class="custom-select my-1 mr-sm-2" name="brand" id="brand">
+                    {% for item in form.brand %}
+                    <option value={{item.data}}>{{item.label}}</option>
+                    {% endfor %}
+                </select>
+                </div>
+            </div>
+            <!--    제품명     -->
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" for="name">제품명을 입력하세요 : </label>
+                <div class="col-sm-7">
+                <input class="form-control" type="text" name="name" id="name" value="{{ form.name.data or ''}}">
+                </div>
+            </div>
+            <!--    제품코드    -->
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" for="code">제품코드를 입력하세요 : </label>
+                <div class="col-sm-7">
+                <input class="form-control" type="text" name="code" id="code" value="{{ form.code.data or ''}}">
+                </div>
+            </div>
+            <!--    발매가     -->
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" for="price">발매가를 입력하세요 : </label>
+                <div class="col-sm-7">
+                <input class="form-control" type=number name="price" id="price" value="{{ form.price.data or ''}}">
+                </div>
+            </div>
+            <!--    색상     -->
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" for="colorway">컬러를 입력하세요 : </label>
+                <div class="col-sm-7">
+                <input class="form-control" type="text" name="colorway" id="colorway" value="{{ form.colorway.data or ''}}">
+                </div>
+            </div>
+            <!--    발매일     -->
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" for="releasedate">발매일을 선택하세요 : </label>
+                <div class="col-sm-7">
+                <input class="form-control" type="date" name="releasedate" id="releasedate" value="{{ form.releasedate.data or '2020-10-12'}}">
+                </div>
+            </div>
+            <!--    이미지     -->
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">신발사진을 선택하세요 : </label>
+                <div class="custom-file col-sm-7">
+                    <input class="custom-file-input " type="file" accept="image/*" name="img" id="img">
+                    <label class="custom-file-label" for="img">선택하기</label>
+                </div>
+            </div>
+            <div class="text-center">
+            <button type="submit"{% if not g.user %}disabled {% endif %} class="col-md-2 btn btn-secondary">{% if not g.user %}로그인후사용{% else %}저장하기{% endif %}</button>
+            <button type="reset" class="col-md-2 btn btn-secondary">초기화</button>
+                </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block script%}
+<script>
+// Add the following code if you want the name of the file appear on select
+$(".custom-file-input").on("change", function() {
+  var fileName = $(this).val().split("\\").pop();
+  $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+});
+</script>
+{% endblock %}

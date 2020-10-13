@@ -11,6 +11,14 @@ answer_voter = db.Table(
     db.Column('answer_id', db.Integer, db.ForeignKey('answer.id', ondelete='CASCADE'), primary_key=True)
 )
 
+shoesmodel_hashtag = db.Table('shoesmodel_hashtag',
+                        db.Column('shoesmodel_id', db.Integer, db.ForeignKey('shoesmodel.id', ondelete='CASCADE'),
+                                  primary_key=True),
+                        db.Column('hashtag_id', db.Integer, db.ForeignKey('hashtag.id', ondelete='CASCADE'),
+                                  primary_key=True)
+                        )
+
+
 class Question(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     subject = db.Column(db.String(200), nullable=False)
@@ -52,6 +60,19 @@ class Comment(db.Model):
     answer_id = db.Column(db.Integer, db.ForeignKey('answer.id', ondelete='CASCADE'), nullable=True)
     answer = db.relationship('Answer', backref=db.backref('comment_set'))
 
+class Shoesmodel(db.Model):
+    id = db.Column(db.Integer,primary_key=True)
+    name = db.Column(db.String(50),unique=True)
+    code = db.Column(db.String(30),unique=True)
+    img = db.Column(db.Text())
+    brand = db.Column(db.String(30),nullable=False)
+    retail_price = db.Column(db.Integer,default=0)
+    release_date = db.Column(db.DateTime())
+    colorway = db.Column(db.Text())
+
+    hashtag = db.relationship('Hashtag', secondary=shoesmodel_hashtag, backref=db.backref('shoesmodel_set'))
+
+
 class Shoes(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     title = db.Column(db.String(200),nullable=False)
@@ -64,3 +85,12 @@ class Shoes(db.Model):
     img = db.Column(db.Text())
     search_query = db.Column(db.String(30))
 
+    shoesmodel_id = db.Column(db.String(30), db.ForeignKey('shoesmodel.id',onupdate='CASCADE'))
+    shoesmodel = db.relationship('Shoesmodel', backref=db.backref('sales_set'))
+
+
+class Hashtag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    keyword = db.Column(db.String(30),unique=True)
+
+    model = db.relationship('Shoesmodel', secondary=shoesmodel_hashtag, backref=db.backref('hashtag_set'))
