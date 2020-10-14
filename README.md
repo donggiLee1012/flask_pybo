@@ -1,3 +1,3 @@
 # flask_pybo
 
-[Flask] <htpp://im-donggi.kro.kr>
+[Flask](http://im-donggi.kro.kr)
