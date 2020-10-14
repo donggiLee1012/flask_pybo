@@ -8,6 +8,8 @@ from pybo.models import Shoes,Shoesmodel
 from ..forms import SearchShoes,ShoesModelCreateForm
 from pybo.views.auth_views import login_required
 from sqlalchemy import func,nullslast,select
+import urllib
+import urllib.request
 import threading
 
 bp = Blueprint('shoes',__name__,url_prefix='/shoes')
@@ -121,21 +123,6 @@ def process():
 
 
 
-@bp.route('/test/')
-def test():
-    import time
-    # time.sleep(5)
-    #
-    # def tt1():
-    #     return render_template('test.html')
-
-    #shoes_list = Shoes.query.order_by(Shoes.id.desc()).first()
-
-    #sss=shoes_list.upload_date
-    query_txt = '덩크'
-    shoes_list = Shoes.query.filter(Shoes.search_query == query_txt).order_by(Shoes.id.desc()).first()
-    return render_template('shoes/test.html',shoes_list=shoes_list)
-
 
 
 @bp.route('/model/create/', methods=['GET', 'POST'])
@@ -150,21 +137,31 @@ def model_create():
         code = form.code.data
         color = form.colorway.data
         releasedate = form.releasedate.data
+        uri=form.uri.data
         img = form.img.data
 
-        rrrr = [name,price,brand,code,color,releasedate,img]
+        rrrr = [name,price,brand,code,color,releasedate,img,uri]
 
-
-        filename = secure_filename(img.filename)
-        if name in filename :
-            pass
-        else:
+        # 파일저장
+        if img == None:
             filename = secure_filename(name)+'.jpg'
+            img_path = os.path.join(
+                os.getcwd(), r'pybo\static\crawling_data\model', filename)
+            #urlretrieve(다운이미지경로,저장위치및이름)
+            urllib.request.urlretrieve(uri, img_path)
+
+        else:
+            filename = secure_filename(img.filename)
+            if name in filename :
+                pass
+            else:
+                filename = secure_filename(name)+'.jpg'
+            img.save(os.path.join(
+                os.getcwd(), r'pybo\static\crawling_data\model', filename))
 
         model = Shoesmodel(code=code, img=filename, brand=brand,release_date=releasedate,name=name,colorway=color,retail_price=price)
-        img.save(os.path.join(
-            os.getcwd(),r'pybo\static\crawling_data\model', filename
-        ))
+
+
         db.session.add(model)
         db.session.commit()
 
@@ -173,10 +170,19 @@ def model_create():
 
     else:
         return render_template('shoes/shoes_model_create.html',form=form)
-#
-# @bp.route('/model/')
-# def model():
-#     shosemodel = Shoesmodel.query.all()
-#
-#
 
+@bp.route('/model/view/')
+def model_view():
+    shosemodel = Shoesmodel.query.all()
+    rrr = 'qiei'
+    form = ShoesModelCreateForm()
+    forms = form.brand.choices
+
+    items = Shoesmodel.query.order_by(Shoesmodel.release_date.desc())
+    return render_template('shoes/shoes_model_list.html',rrr=rrr,forms=forms,items=items)
+
+
+@bp.route('/test/',methods=['GET','POST'])
+def test():
+
+    return render_template('shoes/test.html')

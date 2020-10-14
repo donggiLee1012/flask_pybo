@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="{{ url_for('static',filename='bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{ url_for('static',filename='style.css' ) }}">
     <title>hello, pybo</title>
+    {% block style %}
+    {% endblock %}
 </head>
 <body>
 {% include 'navbar.html'%}

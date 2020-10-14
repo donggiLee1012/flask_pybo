@@ -58,13 +58,25 @@
                 </div>
             </div>
             <!--    이미지     -->
+
             <div class="form-group row">
-                <label class="col-sm-4 col-form-label">신발사진을 선택하세요 : </label>
-                <div class="custom-file col-sm-7">
-                    <input class="custom-file-input " type="file" accept="image/*" name="img" id="img">
+                <label class="col-sm-4 col-form-label" for="uri">이미지 주소를 입력하세요 : </label>
+                <div class="col-sm-7">
+                <input class="form-control" type="text" name="uri" id="uri" value="{{ form.uri.data or ''}}">
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label" for="img">로컬 이미지를 선택하세요 : </label>
+                <div class="custom-file col-sm-7" id="select_hidden">
+                    <input class="custom-file-input " type="file" accept="image/*" name="img" id="img" onchange="loadFile(event)">
                     <label class="custom-file-label" for="img">선택하기</label>
                 </div>
             </div>
+            <div class="form-group">
+                <img id="output" style="max-height:200px; max-width:200px;"/>
+            </div>
+
             <div class="text-center">
             <button type="submit"{% if not g.user %}disabled {% endif %} class="col-md-2 btn btn-secondary">{% if not g.user %}로그인후사용{% else %}저장하기{% endif %}</button>
             <button type="reset" class="col-md-2 btn btn-secondary">초기화</button>
@@ -77,8 +89,23 @@
 
 
 {% block script%}
+
+
+
 <script>
+
+
+
+var loadFile = function(event) {
+    var output = document.getElementById('output');
+    output.src = URL.createObjectURL(event.target.files[0]);
+    output.onload = function() {
+      URL.revokeObjectURL(output.src) // free memory
+    }
+  };
+
 // Add the following code if you want the name of the file appear on select
+
 $(".custom-file-input").on("change", function() {
   var fileName = $(this).val().split("\\").pop();
   $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
