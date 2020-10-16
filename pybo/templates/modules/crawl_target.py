@@ -3,6 +3,7 @@ from selenium import webdriver
 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+
 import os, re, time, sys
 from datetime import datetime
 import math
@@ -16,7 +17,7 @@ class Make_driver:
     robots = 'robots.txt'
     driverpath = os.path.join(os.path.dirname(__file__))
     driverpath += r'/chromedriver.exe'
-    options = webdriver.ChromeOptions
+    #options = webdriver.ChromeOptions
 
     #
     # chrome_options = webdriver.ChromeOptions()
@@ -25,8 +26,10 @@ class Make_driver:
     # chrome_options.add_argument('--disable-dev-shm-usage')
     # driver = webdriver.Chrome(driverpath,chrome_options=chrome_options)
 
-    def __init__(self, query_txt='', size='', quantity=''):
-        self.driver = webdriver.Chrome(Make_driver.driverpath)
+
+
+    def __init__(self, query_txt='', size='', quantity='55'):
+
 
         if size == '':
             self.size = ''
@@ -40,6 +43,12 @@ class Make_driver:
             self.query_txt = query_txt
 
         self.quantity = int(quantity)
+
+        options = webdriver.ChromeOptions()
+        options.add_argument('--start-fullscreen')
+        self.driver = webdriver.Chrome(executable_path=Make_driver.driverpath, chrome_options=options)
+
+        #self.driver = webdriver.Chrome(Make_driver.driverpath)
         self.time_marker = time.strftime('%Y-%m-%d', time.localtime())
         # self.img_path = r'/home/multidong1017/project/myproject/pybo/static/img/{}_{}'.format(self.time_marker,self.query_txt)
 
@@ -167,3 +176,22 @@ class Make_driver:
         # b_id = re.search('(\d+)$', id_url).group()
         img_path = os.path.join(self.img_path,img_url[39:])
         urllib.request.urlretrieve('https://footsell.com' + img_url, img_path)
+
+
+    def xxblue(self):
+        path = 'https://www.xxblue.com/'
+        driverpath = r'C:\Users\donggi\Desktop\python_flask\helloflask\module\chromedriver.exe'
+        driver = webdriver.Chrome(driverpath)
+
+    def xxblue_search(self):
+        search = self.driver.find_element_by_name('keyword')
+        keyword = 'B75571'
+        search.send_keys(keyword)
+
+        search.send_keys(Keys.ENTER)
+
+    def xxblue_parser(self):
+        html = self.driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+
+        return soup
