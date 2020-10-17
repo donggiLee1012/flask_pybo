@@ -15,23 +15,18 @@ if __name__ == '__main__':
     db = sqlite3.connect(BASE_DIR)
     soup_list = []
 
-    target = 'https://footsell.com/'
-    add_uri = r'g2/bbs/board.php?bo_table=m51&r=ok'
-
     query_txt='기본'
     size=''
     quantity='40'
 
-    fs = Make_driver(query_txt, size, quantity)
-    fs.driver.implicitly_wait(10)
-    fs.driver.get(target + add_uri)
-    if query_txt != '기본':
-        fs.search()
-    else:
-        fs.driver.refresh()
+    fs = Make_driver('footsell')
 
-    fs.parser(soup_list)
-    objs = fs.check(soup_list)
+    # 기본으로 돌릴떈 필수
+    fs.driver.refresh()
+
+    fs.footsell_parser(soup_list)
+
+    objs = fs.footsell_check(soup_list)
 
     # 데이터베이스 저장할 데이터들
     obj = []
@@ -50,7 +45,7 @@ if __name__ == '__main__':
             break
         print('{num} : {title} , {uploadtime}, {img}'.format(num=num,title=title,uploadtime=uploadtime.__str__(),img=img[39:]))
         abj_att=(title, condition, size, price, seller, uploadtime, uri, img, query_txt)
-        fs.save_img(img)
+        fs.footsell_save_img(img)
         obj.insert(0,abj_att)
         num +=1
 

@@ -10,7 +10,9 @@ from pybo.views.auth_views import login_required
 from sqlalchemy import func,nullslast,select
 import urllib
 import urllib.request
-import threading
+import time
+
+from multiprocessing import Process
 
 bp = Blueprint('shoes',__name__,url_prefix='/shoes')
 
@@ -33,11 +35,27 @@ def search():
 
 
 
+
+
 @bp.route('/list/')
 def _list():
     page = request.args.get('page', type=int, default=1)
     kw = request.args.get('kw', type=str, default='')
     so = request.args.get('so',type=str, default='recent')
+
+    # def detachedProcessFunction():
+    #     i = 0
+    #     while i < 4:
+    #         i = i + 1
+    #         print("loop running %d" % i)
+    #         time.sleep(1)
+    #     return url_for('shoes.main')
+    #
+    # global p
+    # p = Process(target=detachedProcessFunction,args=())
+    # p.daemon = True
+    # p.start()
+
 
     #정렬
     if so == 'expensive':
@@ -90,11 +108,11 @@ def process():
     fs.driver.implicitly_wait(10)
     fs.driver.get(target+add_uri)
     if query_txt !='기본':
-        fs.search()
+        fs.footsell_search()
     else: fs.driver.refresh()
 
-    fs.parser(soup_list)
-    objs=fs.check(soup_list)
+    fs.footsell_parser(soup_list)
+    objs=fs.footsell_check(soup_list)
 
     shoes_list = Shoes.query.order_by(Shoes.id.desc()).first()
 
@@ -103,7 +121,7 @@ def process():
     for title, condition, size, price, seller, uploadtime, uri, img in objs:
         if title == shoes_list.title and uploadtime.__str__()[:10] == shoes_list.upload_date[:10] and img[39:] == shoes_list.img[39:]:
             break
-        fs.save_img(img)
+        fs.footsell_save_img(img)
         obj.insert(0,Shoes(title=title, condition=condition,size=size,price=price,
               seller=seller,upload_date=uploadtime,
               uri=uri,search_query=query_txt,img=img))

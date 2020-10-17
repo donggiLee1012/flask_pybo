@@ -7,64 +7,49 @@ if __name__ =='__main__':
     BASE_DIR = os.path.join(os.path.join(os.path.pardir,'pybo.db'))
 
     db = sqlite3.connect(BASE_DIR)
-    soup_list = []
 
-    target = 'https://www.xxblue.com/'
+    query_txt = '오프화이트'
 
-    xb = Make_driver()
-    xb.driver.implicitly_wait(10)
-    xb.driver.get(target)
+    xb = Make_driver('xxblue')
 
-    xb.driver.find_element_by_css_selector('.search-btn').click()
+    title,uri,img_name = xb.xxblue_search(query_txt)
 
-    xb.xxblue_search()
-    # search = xb.driver.find_element_by_name('keyword')
-    # keyword = 'B75571'
-    # search.send_keys(keyword)
-    #
-    # search.send_keys(xb.Keys.ENTER)
+    xb.xxblue_element_generate()
 
-    # 첫번째 상품
-    try:
-        xb.driver.find_elements_by_css_selector("div[class^='rarex-grid-product product']")[0].click()
-    except:
-        print('검색결과없음')
-
-    # 입찰 현황 더보기란 클릭
-    # or driver.find_element_by_id('latestTransactionMore').click()
-    xb.driver.find_element_by_id('asknMore').click()
-
-    # 거래가격 탭 클릭
-    xb.driver.find_element_by_css_selector('label[for="transactedPrice"]').click()
-
-    current = 0
-
-
-
-    while 1:
-        table_td = xb.driver.find_elements_by_css_selector('#transactedPriceTable tr')
-        # ELEMENT 가 화면에 보이도록 스크롤 조정 --> 아래 부분 추가로 확장됨
-        xb.driver.execute_script("arguments[0].scrollIntoView(true);", table_td[-1])
-        time.sleep(1)
-        if current != len(table_td):
-            current = len(table_td)
-            print(current)
-        else:
-            break
-
-
-    soup = xb.xxblue_parser()
+    objs,shoesmodel_id = xb.xxblue_parser()
 
     xb.driver.quit()
 
-    saledatas = soup.select('#transactedPriceTable tr')
+    print(objs)
 
-    row = []
 
-    for i in saledatas:
-        column = []
-        for j in i.select('td'):
-            column.append(j.text)
-        row.append(column)
+    # 데이터베이스 저장할 데이터들
 
-    print(row)
+    obj = []
+    cursor = db.cursor()
+
+    condition = '검수상품'
+    seller = 'xxblue'
+    img = img_name
+    uri = uri
+    shoesmodel_id = shoesmodel_id
+    for i in objs:
+        size = i[0]
+        price = i[1].replace(',','').replace('원','')
+        uploadtime = i[2]
+        abj_att = (title, condition, size, price, seller, uploadtime, uri, img, query_txt,shoesmodel_id)
+        obj.insert(0, abj_att)
+
+    sql = '''INSERT INTO shoes (title,condition,size,price,seller,upload_date,uri,img,search_query,shoesmodel_id)
+                values (?,?,?,?,?,?,?,?,?,?)'''
+
+    cursor.executemany(sql, obj)
+
+    db.commit()
+    db.close()
+    xb.driver.quit()
+
+
+
+
+
