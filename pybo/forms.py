@@ -46,3 +46,4 @@ class ShoesModelCreateForm(FlaskForm):
     releasedate = DateField('발매일',validators=[DataRequired()],format='%Y-%m-%d')
     price = IntegerField('발매가', validators=[validators.NumberRange(min=0)])
     colorway = StringField('색상',validators=[DataRequired('내용은 필수입력 항목입니다.')])
+

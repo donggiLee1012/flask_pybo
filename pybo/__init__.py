@@ -26,6 +26,7 @@ def create_app():
 
     app.config.from_envvar('APP_CONFIG_FILE')
 
+
     # ORM
     db.init_app(app)
 
@@ -37,14 +38,14 @@ def create_app():
 
     from . import models
     # 블루프린트
-    from .views import main_view,question_views,answer_views,auth_views,comment_views,vote_views,footsell_views
+    from .views import main_view,question_views,answer_views,auth_views,comment_views,vote_views,shoes_views
     app.register_blueprint(main_view.bp)
     app.register_blueprint(question_views.bp)
     app.register_blueprint(answer_views.bp)
     app.register_blueprint(auth_views.bp)
     app.register_blueprint(comment_views.bp)
     app.register_blueprint(vote_views.bp)
-    app.register_blueprint(footsell_views.bp)
+    app.register_blueprint(shoes_views.bp)
 
 
 

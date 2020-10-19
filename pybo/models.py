@@ -63,6 +63,7 @@ class Comment(db.Model):
 class Shoesmodel(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     name = db.Column(db.String(50),unique=True)
+    subname = db.Column(db.String(50), unique=True)
     code = db.Column(db.String(30),unique=True)
     img = db.Column(db.Text())
     brand = db.Column(db.String(30),nullable=False)
@@ -94,3 +95,11 @@ class Hashtag(db.Model):
     keyword = db.Column(db.String(30),unique=True)
 
     model = db.relationship('Shoesmodel', secondary=shoesmodel_hashtag, backref=db.backref('hashtag_set'))
+#
+# class Collaboration(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     brand = db.Column(db.String(30),nullable=False)
+#     collabo = db.Column(db.String(40),nullable=False)
+#     sub_collabo = db.Column(db.String(30))
+#     shoesmodel_id = db.Column(db.String(30), db.ForeignKey('shoesmodel.id',ondelete='CASCADE'))
+#
