@@ -11,12 +11,6 @@ answer_voter = db.Table(
     db.Column('answer_id', db.Integer, db.ForeignKey('answer.id', ondelete='CASCADE'), primary_key=True)
 )
 
-shoesmodel_hashtag = db.Table('shoesmodel_hashtag',
-                        db.Column('shoesmodel_id', db.Integer, db.ForeignKey('shoesmodel.id', ondelete='CASCADE'),
-                                  primary_key=True),
-                        db.Column('hashtag_id', db.Integer, db.ForeignKey('hashtag.id', ondelete='CASCADE'),
-                                  primary_key=True)
-                        )
 
 
 class Question(db.Model):
@@ -71,7 +65,14 @@ class Shoesmodel(db.Model):
     release_date = db.Column(db.DateTime())
     colorway = db.Column(db.Text())
 
-    hashtag = db.relationship('Hashtag', secondary=shoesmodel_hashtag, backref=db.backref('shoesmodel_set'))
+class Structureprice(db.Model):
+    id = db.Column(db.Integer,primary_key=True)
+    code = db.Column(db.String(30), db.ForeignKey('shoesmodel.code',onupdate='CASCADE'))
+    saleday = db.Column(db.DateTime(), nullable=False)
+    price = db.Column(db.Integer,default=0)
+    size = db.Column(db.Integer,default=200)
+
+
 
 
 class Shoes(db.Model):
@@ -90,16 +91,3 @@ class Shoes(db.Model):
     shoesmodel = db.relationship('Shoesmodel', backref=db.backref('sales_set'))
 
 
-class Hashtag(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    keyword = db.Column(db.String(30),unique=True)
-
-    model = db.relationship('Shoesmodel', secondary=shoesmodel_hashtag, backref=db.backref('hashtag_set'))
-#
-# class Collaboration(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     brand = db.Column(db.String(30),nullable=False)
-#     collabo = db.Column(db.String(40),nullable=False)
-#     sub_collabo = db.Column(db.String(30))
-#     shoesmodel_id = db.Column(db.String(30), db.ForeignKey('shoesmodel.id',ondelete='CASCADE'))
-#

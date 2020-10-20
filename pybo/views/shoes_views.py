@@ -4,7 +4,7 @@ from werkzeug.utils import redirect,secure_filename
 from werkzeug.datastructures import CombinedMultiDict
 from pybo.templates.modules.crawl_target import Make_driver
 from .. import db
-from pybo.models import Shoes,Shoesmodel
+from pybo.models import Shoes,Shoesmodel,Structureprice
 from ..forms import SearchShoes,ShoesModelCreateForm
 from pybo.views.auth_views import login_required
 from sqlalchemy import func,nullslast,select
@@ -31,11 +31,6 @@ def search():
         return redirect(url_for('shoes.process'),code=307)
     else:
         return render_template('shoes/shoes_search.html',form=form)
-
-
-
-
-
 
 @bp.route('/list/')
 def _list():
@@ -143,64 +138,13 @@ def process():
 
 
 
-@bp.route('/model/create/', methods=['GET', 'POST'])
-def model_create():
-    form = ShoesModelCreateForm()
-    #form = ShoesModelCreateForm(CombinedMultiDict((request.files, request.form)))
-
-    if request.method == 'POST' and form.validate_on_submit():
-        name = form.name.data
-        price = form.price.data
-        brand = form.brand.data
-        code = form.code.data
-        color = form.colorway.data
-        releasedate = form.releasedate.data
-        uri=form.uri.data
-        img = form.img.data
-
-        rrrr = [name,price,brand,code,color,releasedate,img,uri]
-
-        # 파일저장
-        if img == None:
-            filename = secure_filename(name)+'.jpg'
-            img_path = os.path.join(
-                os.getcwd(), r'pybo\static\crawling_data\model', filename)
-            #urlretrieve(다운이미지경로,저장위치및이름)
-            urllib.request.urlretrieve(uri, img_path)
-
-        else:
-            filename = secure_filename(img.filename)
-            if name in filename :
-                pass
-            else:
-                filename = secure_filename(name)+'.jpg'
-            img.save(os.path.join(
-                os.getcwd(), r'pybo\static\crawling_data\model', filename))
-
-        model = Shoesmodel(code=code, img=filename, brand=brand,release_date=releasedate,name=name,colorway=color,retail_price=price)
-
-
-        db.session.add(model)
-        db.session.commit()
-
-        return render_template('shoes/test2.html',rrrr=rrrr)
-
-
-    else:
-        return render_template('shoes/shoes_model_create.html',form=form)
-
 @bp.route('/model/view/')
 def model_view():
-    shosemodel = Shoesmodel.query.all()
-    rrr = 'qiei'
+
     form = ShoesModelCreateForm()
     forms = form.brand.choices
 
     items = Shoesmodel.query.order_by(Shoesmodel.release_date.desc())
-    return render_template('shoes/shoes_model_list.html',rrr=rrr,forms=forms,items=items)
+    return render_template('shoes/shoes_model_list.html',forms=forms,items=items)
 
 
-@bp.route('/test/',methods=['GET','POST'])
-def test():
-
-    return render_template('shoes/test.html')
