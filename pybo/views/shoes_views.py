@@ -1,4 +1,4 @@
-from flask import Blueprint, url_for, request, render_template
+from flask import Blueprint, url_for, request, render_template,flash
 import os
 from werkzeug.utils import redirect,secure_filename
 from werkzeug.datastructures import CombinedMultiDict
@@ -7,6 +7,7 @@ from .. import db
 from pybo.models import Shoes,Shoesmodel,Structureprice
 from ..forms import SearchShoes,ShoesModelCreateForm
 from pybo.views.auth_views import login_required
+from pybo.templates.modules.initclass import *
 from sqlalchemy import func,nullslast,select
 import urllib
 import urllib.request
@@ -18,7 +19,13 @@ bp = Blueprint('shoes',__name__,url_prefix='/shoes')
 
 @bp.route('/main/')
 def main():
-    return render_template('shoes/shoes_main.html')
+    #modelprice = Structureprice.query.group_by(Structureprice.code).all()
+    modelprice = Structureprice.query.all()
+    marketprice = Shoes.query.all()
+    model = Shoesmodel.query.all()
+
+
+    return render_template('shoes/shoes_main.html',modelprice=modelprice,marketprice=marketprice,model=model)
 
 
 @bp.route('/search/',methods=('GET','POST'))
@@ -28,7 +35,13 @@ def search():
 
     if request.method == 'POST' and form.validate_on_submit():
 
-        return redirect(url_for('shoes.process'),code=307)
+        query_txt = form.content.data
+        size = form.size.data
+        quantity = form.quantity.data
+
+        howmany=process(query_txt,size,quantity)
+        flash(howmany)
+        return redirect(url_for('shoes._list'))
     else:
         return render_template('shoes/shoes_search.html',form=form)
 
@@ -37,19 +50,6 @@ def _list():
     page = request.args.get('page', type=int, default=1)
     kw = request.args.get('kw', type=str, default='')
     so = request.args.get('so',type=str, default='recent')
-
-    # def detachedProcessFunction():
-    #     i = 0
-    #     while i < 4:
-    #         i = i + 1
-    #         print("loop running %d" % i)
-    #         time.sleep(1)
-    #     return url_for('shoes.main')
-    #
-    # global p
-    # p = Process(target=detachedProcessFunction,args=())
-    # p.daemon = True
-    # p.start()
 
 
     #정렬
@@ -83,68 +83,31 @@ def detail(shoes_id):
 
     return render_template('shoes/shoes_detail.html',shoes=shoes)
 
+def process(query_txt,size,quantity):
+    total_list=[]
+    # FOOTSELL CRAWLING
+    fs = Foostsell(query_txt,size,quantity)
+    fs.start()
+    fs.search()
+    fs_soup = fs.soup_make()
+    fs_obj,count = fs.parser(fs_soup)
+    fs.driver.quit()
+    num =0
+    #zip(title, condition, size, price, seller, uploadtime, uri, img)
+    for title, condition, size, price, seller, uploadtime, uri, img in fs_obj:
+        fs.img_save(img,img[59:])
+        total_list.insert(0, Shoes(title=title, condition=condition, size=size, price=price,
+                            seller=seller, upload_date=uploadtime,
+                            uri=uri, search_query=query_txt, img=img))
+        num +=1
 
-
-
-
-@bp.route('/footsell',methods=('GET','POST'))
-def process():
-    soup_list=[]
-    form = SearchShoes()
-    target = 'https://footsell.com/'
-    add_uri = r'g2/bbs/board.php?bo_table=m51&r=ok'
-
-
-    size = form.size.data
-    query_txt = form.content.data
-    quantity = form.quantity.data
-
-    fs = Make_driver(query_txt,size,quantity)
-    fs.driver.implicitly_wait(10)
-    fs.driver.get(target+add_uri)
-    if query_txt !='기본':
-        fs.footsell_search()
-    else: fs.driver.refresh()
-
-    fs.footsell_parser(soup_list)
-    objs=fs.footsell_check(soup_list)
-
-    shoes_list = Shoes.query.order_by(Shoes.id.desc()).first()
-
-    # 데이터베이스 저장할 데이터들
-    obj=[]
-    for title, condition, size, price, seller, uploadtime, uri, img in objs:
-        if title == shoes_list.title and uploadtime.__str__()[:10] == shoes_list.upload_date[:10] and img[39:] == shoes_list.img[39:]:
-            break
-        fs.footsell_save_img(img)
-        obj.insert(0,Shoes(title=title, condition=condition,size=size,price=price,
-              seller=seller,upload_date=uploadtime,
-              uri=uri,search_query=query_txt,img=img))
-
-    db.session.bulk_save_objects(obj)
+    db.session.bulk_save_objects(total_list)
     db.session.commit()
 
-    fs.driver.quit()
-
-
-    return redirect(url_for('shoes._list'))
-
-
-
-    #return render_template('shoes/shoes_result.html',form=form,obj=obj)
+    return ('찾은값:{} DB에 저장한값:{}'.format(count,num))
 
 
 
 
-
-
-@bp.route('/model/view/')
-def model_view():
-
-    form = ShoesModelCreateForm()
-    forms = form.brand.choices
-
-    items = Shoesmodel.query.order_by(Shoesmodel.release_date.desc())
-    return render_template('shoes/shoes_model_list.html',forms=forms,items=items)
 
 

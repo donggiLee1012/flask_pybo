@@ -23,14 +23,18 @@
 
             {% if g.user.username == '1234' %}
             <li class="nav-item">
-                 <a class="nav-link" href="{{url_for('shoes.search')}}">크롤링</a>
+                 <a class="nav-link" href="{{url_for('shoes.search')}}">신발시장 크롤링</a>
             </li>
             <li class="nav-item">
-                 <a class="nav-link" href="{{url_for('shoes.model_create')}}">모델생성</a>
+                 <a class="nav-link" href="{{url_for('model.create')}}">신발모델 생성</a>
             </li>
+
             {% endif %}
             <li class="nav-item">
-                 <a class="nav-link" href="{{url_for('shoes._list')}}">신발시세조회</a>
+                 <a class="nav-link" href="{{url_for('model.view')}}">모델 조회</a>
+            </li>
+            <li class="nav-item">
+                 <a class="nav-link" href="{{url_for('shoes._list')}}">시장시세조회</a>
             </li>
         </ul>
     </div>

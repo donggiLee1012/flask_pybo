@@ -1,4 +1,4 @@
-from flask import Blueprint, url_for, request, render_template
+from flask import Blueprint, url_for, request, render_template,flash
 import os
 from werkzeug.utils import redirect,secure_filename
 from werkzeug.datastructures import CombinedMultiDict
@@ -16,11 +16,32 @@ from multiprocessing import Process
 
 bp = Blueprint('model',__name__,url_prefix='/model')
 
+
+@bp.route('/list/<code>')
+def _list(code):
+    page = request.args.get('page', type=int, default=1)
+    so = request.args.get('so',type=str, default='recent')
+    code=code
+
+
+    #정렬
+    if so == 'expensive':
+        model_list = Structureprice.query.filter(Structureprice.code.ilike(code)).order_by(Structureprice.price.desc())
+    elif so =='popular':
+        model_list = Structureprice.query.filter(Structureprice.code.ilike(code)).order_by(Structureprice.size.desc())
+    else : #최신수
+        model_list = Structureprice.query.filter(Structureprice.code.ilike(code)).order_by(Structureprice.saleday.desc())
+
+
+    model_list = model_list.paginate(page, per_page=10)
+
+    return render_template('shoes/amount_model.html', model_list=model_list,page=page,so=so,code=code)
+
 @bp.route('/create/', methods=['GET', 'POST'])
 def create():
     form = ShoesModelCreateForm()
     #form = ShoesModelCreateForm(CombinedMultiDict((request.files, request.form)))
-
+    loading = url_for('static',filename='elephant.gif')
 
     if request.method == 'POST' and form.validate_on_submit():
         name = form.name.data
@@ -52,20 +73,32 @@ def create():
                 os.getcwd(), r'pybo\static\crawling_data\model', filename))
 
         model = Shoesmodel(code=code, img=filename, brand=brand,release_date=releasedate,name=name,colorway=color,retail_price=price)
-
-
         db.session.add(model)
         db.session.commit()
+        howmany = process(code)
 
-        return redirect(url_for('model.modelprice',code=code))
+        flash(howmany)
+
+        return redirect(url_for('model.view'))
+
 
 
     else:
-        return render_template('shoes/shoes_model_create.html',form=form)
+        return render_template('shoes/shoes_model_create.html',form=form,loading=loading)
 
 
-@bp.route('/create/<string:code>', methods=['GET', 'POST'])
-def modelprice(code):
+
+
+@bp.route('/view/')
+def view():
+
+    form = ShoesModelCreateForm()
+    forms = form.brand.choices
+
+    items = Shoesmodel.query.order_by(Shoesmodel.release_date.desc())
+    return render_template('shoes/shoes_model_list.html',forms=forms,items=items)
+
+def process(code):
     xxblue_total = []
     xb = Xxblue(code)
     xb.start()
@@ -83,8 +116,6 @@ def modelprice(code):
     num = 0
     # 중복값 비교
     comparison = Structureprice.query.filter(Structureprice.code.like(code)).order_by(Structureprice.id.desc()).first()
-
-
 
     if '없음' in xb_obj[0][0]:
         pass
@@ -107,8 +138,8 @@ def modelprice(code):
         db.session.bulk_save_objects(xxblue_total)
 
     db.session.commit()
-    print('찾은값:{} 넣은값:{}'.format(tablenum,num))
-    return redirect(url_for('shoes.main'))
+
+    return ('찾은값:{} DB에 저장한값:{}'.format(tablenum,num))
 
 @bp.route('/test/')
 def test22():
