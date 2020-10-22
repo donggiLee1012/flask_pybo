@@ -70,8 +70,8 @@ class Foostsell(Driver):
             size_select = self.driver.find_element(By.CSS_SELECTOR, input_size)
             size_select.click()
 
-    def soup_make(self, soup_list=[]):
-
+    def soup_make(self):
+        soup_list = []
         for j in range(math.ceil(self.quantity / 40)):
 
             t.sleep(1)
@@ -171,7 +171,7 @@ class Foostsell(Driver):
                 if count == self.quantity:
                     break
 
-        return zip(title, condition, size, price, seller, uploadtime, uri, img)
+        return zip(title, condition, size, price, seller, uploadtime, uri, img),count
 
 class Xxblue(Driver):
     target = 'https://www.xxblue.com/'
@@ -203,8 +203,8 @@ class Xxblue(Driver):
         # 거래가격 탭 클릭
         self.driver.find_element_by_css_selector('label[for="transactedPrice"]').click()
 
-        uri = self.driver.current_url
-        return title,uri,img_name
+        #uri = self.driver.current_url
+        return title,img_name
 
     def element_generate(self):
         current =0
@@ -217,21 +217,23 @@ class Xxblue(Driver):
                 current = len(table_td)
             else:
                 break
+        return len(table_td)
 
-    def parser(self,objs=[]):
+    def parser(self):
+        objs = []
         html = self.driver.page_source
         soup = BeautifulSoup(html, 'html.parser')
         saledatas = soup.select('#transactedPriceTable tr')
-
-        a = soup.find(class_='product-info').text
-        shoesmodel_id = re.search('(스타일코드\s)(.*)(\s)',a).group(2)
+        #
+        # a = soup.find(class_='product-info').text
+        # shoesmodel_id = re.search('(스타일코드\s)(.*)(\s)',a).group(2)
         for i in saledatas:
             column = []
             for j in i.select('td'):
                 column.append(j.text)
             objs.append(column)
 
-        return objs,shoesmodel_id
+        return objs
 
 class Bgjt(Driver):
     target ='https://m.bunjang.co.kr/'

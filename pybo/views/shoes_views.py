@@ -23,9 +23,11 @@ def main():
     modelprice = Structureprice.query.all()
     marketprice = Shoes.query.all()
     model = Shoesmodel.query.all()
+    brands = Shoesmodel.query.group_by(Shoesmodel.brand)
 
 
-    return render_template('shoes/shoes_main.html',modelprice=modelprice,marketprice=marketprice,model=model)
+
+    return render_template('shoes/shoes_main.html',modelprice=modelprice,marketprice=marketprice,model=model,brands=brands)
 
 
 @bp.route('/search/',methods=('GET','POST'))
